@@ -10,7 +10,7 @@ Redditpx is a self-hosted Reddit image viewer that allows you to browse image-he
 *   **Smart Handling:**
     *   Automatically appends `/top?t=all` when visiting a subreddit root for the best viewing experience.
     *   Redirects non-content pages to the `/multi` view.
-*   **Keyboard Shortcut:** Use `Command+Shift+X` (Mac) or `Ctrl+Shift+X` (Windows/Linux) to trigger the redirect without clicking.
+
 *   **Dynamic Icon:** The extension icon automatically adapts to light or dark backgrounds for better visibility.
 *   **Configurable:** Set your custom Redditpx instance URL (defaults to `http://redditpx:3000`).
 
@@ -35,10 +35,9 @@ Once configured, clicking the extension icon will immediately trigger the redire
 ## Usage
 
 **Click Action:**
-Navigate to any Reddit page (e.g., `https://www.reddit.com/r/pics`) and click the extension icon. You will be redirected to that subreddit on your Redditpx instance.
+Navigate to any Reddit page (e.g., `https://www.reddit.com/r/pics`, `https://www.reddit.com/user/saihgupr`) and click the extension icon. You will be redirected to that subreddit or user page on your Redditpx instance.
 
-**Keyboard Shortcut:**
-Press `Command+Shift+X` (Mac) or `Ctrl+Shift+X` (Windows) to instantly redirect the current tab.
+
 
 ## related Projects
 
