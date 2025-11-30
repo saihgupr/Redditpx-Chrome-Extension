@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Redditpx",
+  "version": "1.3",
+  "action": {
+    "default_icon": "icon-light.png",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "128": "icon-light.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "contextMenus",
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "commands": {
+    "send-url-to-ha": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "Command+Shift+X"
+      },
+      "description": "Open current URL in Redditpx"
+    }
+  }
+}
