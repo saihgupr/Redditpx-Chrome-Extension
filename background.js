@@ -167,7 +167,8 @@ function getTransformedUrl(currentUrl, baseUrl) {
       return `${cleanBase}${path}`;
     } else {
       // Not a subreddit or user page -> Go to Multireddit
-      return `${cleanBase}/multi`;
+      // Based on the provided source code, /multi is the correct route for the multireddit logic.
+      return `${cleanBase}/multi`; 
     }
   } catch (e) {
     console.error('Error transforming URL:', e);
