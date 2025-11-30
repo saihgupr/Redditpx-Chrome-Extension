@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const baseUrlInput = document.getElementById('baseUrl');
   const saveBtn = document.getElementById('saveBtn');
-  const goBtn = document.getElementById('goBtn');
   const statusDiv = document.getElementById('status');
 
   // Load saved settings
@@ -9,12 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.redditpxBaseUrl) {
       baseUrlInput.value = result.redditpxBaseUrl;
     } else {
-      // Default
       baseUrlInput.value = 'https://redditpx.com';
     }
   });
 
-  // Save settings
+  // Save and Open
   saveBtn.addEventListener('click', () => {
     const url = baseUrlInput.value.trim().replace(/\/$/, ''); // Remove trailing slash
     
@@ -24,26 +22,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     chrome.storage.local.set({ redditpxBaseUrl: url }, () => {
-      showStatus('Settings saved!', true);
-    });
-  });
+      showStatus('Saved!', true);
+      
+      // Perform the redirect action
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const currentTab = tabs[0];
+        if (!currentTab || !currentTab.url) return;
 
-  // Open current page in target
-  goBtn.addEventListener('click', () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const currentTab = tabs[0];
-      if (!currentTab || !currentTab.url) return;
-
-      chrome.storage.local.get(['redditpxBaseUrl'], (result) => {
-        const baseUrl = result.redditpxBaseUrl || 'https://redditpx.com';
-        
         try {
           const currentUrlObj = new URL(currentTab.url);
-          const path = currentUrlObj.pathname + currentUrlObj.search + currentUrlObj.hash;
-          const targetUrl = `${baseUrl}${path}`;
+          let path = currentUrlObj.pathname;
           
-          chrome.tabs.update(currentTab.id, { url: targetUrl });
-          window.close(); // Close popup
+          // Check if it's a subreddit root (e.g., /r/funny or /r/funny/)
+          // Matches /r/anything but not /r/anything/comments/...
+          if (/^\/r\/[^/]+\/?$/.test(path)) {
+             // Ensure no double slashes if path has trailing slash
+             path = path.replace(/\/$/, '') + '/top?t=all';
+          } else {
+             path = path + currentUrlObj.search + currentUrlObj.hash;
+          }
+
+          const targetUrl = `${url}${path}`;
+          
+          chrome.tabs.create({ url: targetUrl });
+          window.close();
         } catch (e) {
           showStatus('Invalid current URL', false);
         }

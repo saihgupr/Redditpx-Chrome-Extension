@@ -57,17 +57,10 @@
       transition: background-color 0.2s;
     }
     #saveBtn {
-      background-color: #e0e0e0;
-      color: #333;
-    }
-    #saveBtn:hover {
-      background-color: #d0d0d0;
-    }
-    #goBtn {
       background-color: #007bff;
       color: white;
     }
-    #goBtn:hover {
+    #saveBtn:hover {
       background-color: #0056b3;
     }
     .status {
@@ -78,6 +71,9 @@
     }
     .status.success {
       color: #28a745;
+    }
+    .status.error {
+      color: #dc3545;
     }
   </style>
 </head>
@@ -91,8 +87,7 @@
   </div>
 
   <div class="actions">
-    <button id="saveBtn">Save</button>
-    <button id="goBtn">Open Here</button>
+    <button id="saveBtn">Save & Open</button>
   </div>
   
   <div id="status" class="status"></div>

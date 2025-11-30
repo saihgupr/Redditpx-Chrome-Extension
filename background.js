@@ -147,15 +147,60 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
+// Helper: Transform URL
+function getTransformedUrl(currentUrl, baseUrl) {
+  try {
+    const currentUrlObj = new URL(currentUrl);
+    let path = currentUrlObj.pathname;
+
+    // Check if it's a subreddit root (e.g., /r/funny or /r/funny/)
+    // Matches /r/anything but not /r/anything/comments/...
+    if (/^\/r\/[^/]+\/?$/.test(path)) {
+       // Ensure no double slashes if path has trailing slash
+       path = path.replace(/\/$/, '') + '/top?t=all';
+    } else {
+       path = path + currentUrlObj.search + currentUrlObj.hash;
+    }
+
+    const cleanBase = baseUrl.replace(/\/$/, '');
+    return `${cleanBase}${path}`;
+  } catch (e) {
+    console.error('Error transforming URL:', e);
+    return null;
+  }
+}
+
+// Manage Popup State
+function updatePopupState() {
+  chrome.storage.local.get(['redditpxBaseUrl'], (result) => {
+    if (result.redditpxBaseUrl) {
+      // URL is saved, disable popup to allow onClicked to fire
+      chrome.action.setPopup({ popup: '' });
+    } else {
+      // URL not saved, show popup settings
+      chrome.action.setPopup({ popup: 'popup.html' });
+    }
+  });
+}
+
 // Update icon when extension starts
 chrome.runtime.onStartup.addListener(() => {
   updateIcon();
   setupThemeListener();
+  updatePopupState();
 });
 
 chrome.runtime.onInstalled.addListener(() => {
   updateIcon();
   setupThemeListener();
+  updatePopupState();
+});
+
+// Listen for storage changes to update popup state dynamically
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.redditpxBaseUrl) {
+    updatePopupState();
+  }
 });
 
 // Update icon when tab becomes active (user switches tabs)
@@ -170,6 +215,23 @@ chrome.windows.onFocusChanged.addListener(() => {
   setupThemeListener();
 });
 
+// Handle click on icon (only fires if popup is '')
+chrome.action.onClicked.addListener((tab) => {
+  if (tab.url) {
+    chrome.storage.local.get(['redditpxBaseUrl'], (result) => {
+      if (result.redditpxBaseUrl) {
+        const targetUrl = getTransformedUrl(tab.url, result.redditpxBaseUrl);
+        if (targetUrl) {
+          chrome.tabs.create({ url: targetUrl });
+        }
+      } else {
+         // Should not happen if logic is correct, but fallback
+         chrome.runtime.openOptionsPage(); 
+      }
+    });
+  }
+});
+
 // Add this listener for commands
 chrome.commands.onCommand.addListener((command) => {
   if (command === 'send-url-to-ha') {
@@ -178,14 +240,9 @@ chrome.commands.onCommand.addListener((command) => {
       if (currentTab?.url) {
          chrome.storage.local.get(['redditpxBaseUrl'], (result) => {
             const baseUrl = result.redditpxBaseUrl || 'https://redditpx.com';
-            try {
-              const currentUrlObj = new URL(currentTab.url);
-              const path = currentUrlObj.pathname + currentUrlObj.search + currentUrlObj.hash;
-              const cleanBase = baseUrl.replace(/\/$/, '');
-              const targetUrl = `${cleanBase}${path}`;
-              chrome.tabs.update(currentTab.id, { url: targetUrl });
-            } catch (e) {
-              console.error('Invalid URL', e);
+            const targetUrl = getTransformedUrl(currentTab.url, baseUrl);
+            if (targetUrl) {
+               chrome.tabs.create({ url: targetUrl });
             }
          });
       } else {
