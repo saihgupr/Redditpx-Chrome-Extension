@@ -152,18 +152,23 @@ function getTransformedUrl(currentUrl, baseUrl) {
   try {
     const currentUrlObj = new URL(currentUrl);
     let path = currentUrlObj.pathname;
-
-    // Check if it's a subreddit root (e.g., /r/funny or /r/funny/)
-    // Matches /r/anything but not /r/anything/comments/...
-    if (/^\/r\/[^/]+\/?$/.test(path)) {
-       // Ensure no double slashes if path has trailing slash
-       path = path.replace(/\/$/, '') + '/top?t=all';
-    } else {
-       path = path + currentUrlObj.search + currentUrlObj.hash;
-    }
-
     const cleanBase = baseUrl.replace(/\/$/, '');
-    return `${cleanBase}${path}`;
+
+    // Check if it's a reddit content page (subreddit, user, domain)
+    if (/^\/(r|u|user|domain)\//.test(path)) {
+      // Check if it's a subreddit root (e.g., /r/funny or /r/funny/)
+      // Matches /r/anything but not /r/anything/comments/...
+      if (/^\/r\/[^/]+\/?$/.test(path)) {
+         // Ensure no double slashes if path has trailing slash
+         path = path.replace(/\/$/, '') + '/top?t=all';
+      } else {
+         path = path + currentUrlObj.search + currentUrlObj.hash;
+      }
+      return `${cleanBase}${path}`;
+    } else {
+      // Not a subreddit or user page -> Go to Multireddit
+      return `${cleanBase}/multi`;
+    }
   } catch (e) {
     console.error('Error transforming URL:', e);
     return null;
@@ -239,7 +244,7 @@ chrome.commands.onCommand.addListener((command) => {
       const currentTab = tabs[0];
       if (currentTab?.url) {
          chrome.storage.local.get(['redditpxBaseUrl'], (result) => {
-            const baseUrl = result.redditpxBaseUrl || 'https://redditpx.com';
+            const baseUrl = result.redditpxBaseUrl || 'http://redditpx:3000';
             const targetUrl = getTransformedUrl(currentTab.url, baseUrl);
             if (targetUrl) {
                chrome.tabs.create({ url: targetUrl });

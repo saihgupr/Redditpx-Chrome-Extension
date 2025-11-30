@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (result.redditpxBaseUrl) {
       baseUrlInput.value = result.redditpxBaseUrl;
     } else {
-      baseUrlInput.value = 'https://redditpx.com';
+      baseUrlInput.value = 'http://redditpx:3000';
     }
   });
 
